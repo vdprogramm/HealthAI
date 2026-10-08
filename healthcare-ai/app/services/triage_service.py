@@ -1,6 +1,10 @@
 import json
 import httpx
 import re
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
 from app.config import settings
 from app.schemas import TriageResult
 
@@ -46,8 +50,6 @@ Không thêm nội dung sau JSON."""
 
 def extract_json(content: str) -> dict:
     content = content.strip()
-    print("CONTENT BEFORE PARSE:")
-    print(repr(content))
     
     # Tìm JSON object bất kể AI thêm text/markdown
     match = re.search(r'\{[\s\S]*?\}', content)
@@ -55,8 +57,6 @@ def extract_json(content: str) -> dict:
         raise ValueError("AI không trả về JSON object")
         
     json_text = match.group(0)
-    print("JSON EXTRACTED:")
-    print(json_text)
     
     return json.loads(json_text)
 
@@ -85,40 +85,43 @@ Chỉ trả về JSON theo schema đã quy định."""
         "Content-Type": "application/json"
     }
     
-    async with httpx.AsyncClient(timeout=30.0) as client:
-        response = await client.post(
-            OPENROUTER_URL,
-            headers=headers,
-            json=payload
-        )
-        
+    if not settings.OPENROUTER_API_KEY:
+        logger.error("OPENROUTER_API_KEY is missing")
+        raise RuntimeError("AI service is not configured")
+
+    # Retry only temporary upstream errors. Do not retry auth, invalid models, or 400.
+    try:
+        async with httpx.AsyncClient(timeout=httpx.Timeout(25.0, connect=8.0)) as client:
+            for attempt in range(3):
+                try:
+                    response = await client.post(OPENROUTER_URL, headers=headers, json=payload)
+                    if response.status_code in (429, 500, 502, 503, 504) and attempt < 2:
+                        logger.warning("OpenRouter temporary HTTP %s (attempt %s)", response.status_code, attempt + 1)
+                        await asyncio.sleep(1.5 * (attempt + 1))
+                        continue
+                    break
+                except (httpx.TimeoutException, httpx.TransportError) as exc:
+                    logger.warning("OpenRouter network error: %s", type(exc).__name__)
+                    if attempt == 2:
+                        raise RuntimeError("AI provider connection temporarily unavailable") from exc
+                    await asyncio.sleep(1.5 * (attempt + 1))
+    except httpx.HTTPError as exc:
+        raise RuntimeError("AI provider request failed") from exc
+
     if response.status_code != 200:
-        print("OPENROUTER ERROR:", response.text)
-        raise RuntimeError(
-            f"OpenRouter error "
-            f"{response.status_code}: "
-            f"{response.text}"
-        )
-        
+        logger.error("OpenRouter returned HTTP %s", response.status_code)
+        raise RuntimeError(f"AI provider returned HTTP {response.status_code}")
+
     data = response.json()
     try:
         content = data["choices"][0]["message"]["content"]
         
-        print("==============================")
-        print("AI RAW RESPONSE:")
-        print(content)
-        print("==============================")
         
         parsed = extract_json(content)
         
-        print("AI PARSED JSON:", parsed)
         return TriageResult(**parsed)
     except Exception as exc:
-        print(
-            "AI PARSE ERROR:",
-            type(exc).__name__,
-            str(exc)
-        )
+        logger.error("AI response validation failed: %s", type(exc).__name__)
         raise RuntimeError(
-            f"AI trả về dữ liệu không hợp lệ: {str(exc)}"
+            "AI response format is invalid"
         ) from exc
