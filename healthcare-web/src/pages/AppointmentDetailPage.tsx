@@ -63,6 +63,8 @@ export default function AppointmentDetailPage() {
           </p>
         </div>
 
+        <div><span>Phí khám</span><p>{Number(appointment.phiKham ?? 0).toLocaleString("vi-VN")}đ</p></div>
+        <div><span>Thanh toán</span><p>{appointment.trangThaiThanhToan === "PAID" ? "Đã thanh toán" : "Thanh toán trực tiếp tại phòng khám"}</p></div>
         <Link
           className="primary-link"
           to={`/medical-record/${appointment.appointmentId}`}
