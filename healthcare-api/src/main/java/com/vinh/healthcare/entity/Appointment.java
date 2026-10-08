@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "appointments")
@@ -37,12 +38,21 @@ public class Appointment {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_status", nullable = false)
+    @Builder.Default
+    private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
+
+    @Column(name = "fee_amount", precision = 12, scale = 2)
+    private BigDecimal feeAmount;
+
     @PrePersist
     public void prePersist() {
         if (trangThai == null) {
             trangThai = AppointmentStatus.PENDING;
         }
 
+        if (paymentStatus == null) paymentStatus = PaymentStatus.UNPAID;
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
         }
