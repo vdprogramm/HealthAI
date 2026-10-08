@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import axios from 'axios'
 import {
   AlertTriangle,
   Bot,
@@ -39,16 +40,25 @@ export default function AiTriagePage() {
           {
             trieuChung: symptoms,
           },
+          { timeout: 95000 },
         )
 
       setResult(response.data)
     } catch (error: unknown) {
-      console.error('AI Triage request failed:', error)
-
-      setMessage(
-        'Dịch vụ AI đang tạm thời không khả dụng. ' +
-        'Vui lòng thử lại sau ít phút.'
-      )
+      if (axios.isAxiosError(error)) {
+        const status = error.response?.status
+        if (status === 503 || status === 502 || status === 504 || error.code === 'ECONNABORTED' || error.code === 'ERR_NETWORK') {
+          setMessage('AI đang khởi động hoặc nhà cung cấp AI tạm thời không phản hồi. Vui lòng thử lại sau 1–2 phút.')
+        } else if (status === 400) {
+          setMessage(error.response?.data?.message ?? 'Thông tin triệu chứng không hợp lệ. Vui lòng nhập mô tả rõ hơn.')
+        } else if (status === 401 || status === 403) {
+          setMessage('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.')
+        } else {
+          setMessage('Không thể phân tích triệu chứng lúc này. Vui lòng thử lại sau.')
+        }
+      } else {
+        setMessage('Có lỗi ngoài dự kiến. Vui lòng thử lại sau.')
+      }
     } finally {
       setLoading(false)
     }
@@ -123,8 +133,9 @@ export default function AiTriagePage() {
       </div>
 
       {message && (
-        <div className="message-box">
+        <div className="message-box" role="alert">
           {message}
+          {!loading && !result && <button type="button" className="primary-button" onClick={analyze} style={{ marginLeft: 12 }}>Thử lại</button>}
         </div>
       )}
 
