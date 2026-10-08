@@ -3,7 +3,9 @@ package com.vinh.healthcare.service;
 import com.vinh.healthcare.dto.*;
 import com.vinh.healthcare.entity.Admin;
 import com.vinh.healthcare.entity.Patient;
+import com.vinh.healthcare.entity.Doctor;
 import com.vinh.healthcare.repository.AdminRepository;
+import com.vinh.healthcare.repository.DoctorRepository;
 import com.vinh.healthcare.repository.PatientRepository;
 import com.vinh.healthcare.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,17 +18,20 @@ public class AuthService {
 
     private final PatientRepository patientRepository;
     private final AdminRepository adminRepository;
+    private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(
             PatientRepository patientRepository,
             AdminRepository adminRepository,
+            DoctorRepository doctorRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService
     ) {
         this.patientRepository = patientRepository;
         this.adminRepository = adminRepository;
+        this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
@@ -72,6 +77,23 @@ public class AuthService {
                     admin.getId(),
                     admin.getHoTen(),
                     admin.getEmail()
+            );
+        }
+
+        Doctor doctor = doctorRepository.findByEmail(request.email())
+                .orElse(null);
+
+        if (doctor != null) {
+            if (!passwordEncoder.matches(
+                    request.matKhau(), doctor.getMatKhau())) {
+                throw invalidCredentials();
+            }
+
+            return new AuthResponse(
+                    jwtService.generateToken(doctor.getEmail(), "DOCTOR"),
+                    doctor.getId(),
+                    doctor.getTenBacSi(),
+                    doctor.getEmail()
             );
         }
 

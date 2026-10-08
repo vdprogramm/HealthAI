@@ -1,6 +1,7 @@
 package com.vinh.healthcare.security;
 
 import com.vinh.healthcare.repository.AdminRepository;
+import com.vinh.healthcare.repository.DoctorRepository;
 import com.vinh.healthcare.repository.PatientRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,15 +22,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final PatientRepository patientRepository;
     private final AdminRepository adminRepository;
+    private final DoctorRepository doctorRepository;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
             PatientRepository patientRepository,
-            AdminRepository adminRepository
+            AdminRepository adminRepository,
+            DoctorRepository doctorRepository
     ) {
         this.jwtService = jwtService;
         this.patientRepository = patientRepository;
         this.adminRepository = adminRepository;
+        this.doctorRepository = doctorRepository;
     }
 
     @Override
@@ -57,6 +61,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     boolean exists = switch (role) {
                         case "ADMIN" ->
                                 adminRepository.findByEmail(email).isPresent();
+                        case "DOCTOR" ->
+                                doctorRepository.findByEmail(email).isPresent();
                         case "PATIENT" ->
                                 patientRepository.findByEmail(email).isPresent();
                         default -> false;

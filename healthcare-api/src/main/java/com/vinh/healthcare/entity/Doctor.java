@@ -26,4 +26,11 @@ public class Doctor {
 
     @Column(name = "gia_kham", nullable = false)
     private BigDecimal giaKham;
+
+    @Column(unique = true)
+    private String email;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    @Column(name = "mat_khau")
+    private String matKhau;
 }
