@@ -12,6 +12,7 @@ import AppointmentDetailPage from './pages/AppointmentDetailPage'
 import AdminDashboardPage from './pages/AdminDashboardPage'
 import DoctorDashboardPage from './pages/DoctorDashboardPage'
 import './styles/portal.css'
+import './styles/auth-feedback.css'
 export default function App() {
   return <BrowserRouter><Routes>
     <Route path="/login" element={<LoginPage />} />

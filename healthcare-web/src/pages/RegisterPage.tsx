@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { authApi } from '../api/auth.api'
+import AuthFeedback from '../components/AuthFeedback'
+import axios from 'axios'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
@@ -13,8 +15,10 @@ export default function RegisterPage() {
     soDienThoai: '',
   })
 
-  const [error, setError] = useState('')
+  const [feedback,setFeedback] = useState<{kind:'success'|'error';title:string;message:string}|null>(null)
+  const [slow,setSlow]=useState(false)
   const [loading, setLoading] = useState(false)
+  useEffect(()=>{if(!loading)return;const t=window.setTimeout(()=>setSlow(true),8000);return()=>window.clearTimeout(t)},[loading])
 
   const handleSubmit = async (
     e: FormEvent<HTMLFormElement>,
@@ -23,7 +27,7 @@ export default function RegisterPage() {
 
     try {
       setLoading(true)
-      setError('')
+      setFeedback(null);setSlow(false)
 
       const data = await authApi.register(form)
 
@@ -37,12 +41,10 @@ export default function RegisterPage() {
         JSON.stringify(data),
       )
 
-      navigate('/')
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ??
-          'Đăng ký thất bại',
-      )
+      setFeedback({kind:'success',title:'Đăng ký thành công!',message:'Tài khoản đã được tạo. Chào mừng bạn đến HealthAI!'})
+    } catch (err: unknown) {
+      const serverMessage=axios.isAxiosError(err)?err.response?.data?.message:null
+      setFeedback({kind:'error',title:'Đăng ký thất bại',message:typeof serverMessage==='string'?serverMessage:'Không thể tạo tài khoản. Vui lòng thử lại.'})
     } finally {
       setLoading(false)
     }
@@ -58,9 +60,7 @@ export default function RegisterPage() {
 
         <h1>Tạo tài khoản</h1>
 
-        {error && (
-          <div className="error-box">{error}</div>
-        )}
+        
 
         <label>Họ tên</label>
 
@@ -131,6 +131,8 @@ export default function RegisterPage() {
           </Link>
         </p>
       </form>
+      {loading && <AuthFeedback kind="loading" title="Đang đăng ký" message={slow?'Máy chủ đang khởi động, vui lòng chờ...':'Đang tạo tài khoản...'}/>}
+      {feedback && <AuthFeedback kind={feedback.kind} title={feedback.title} message={feedback.message} onContinue={()=>feedback.kind==='success'?navigate('/',{replace:true}):setFeedback(null)}/>}
     </div>
   )
 }
