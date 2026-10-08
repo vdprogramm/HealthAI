@@ -11,8 +11,8 @@ export default function LoginPage() {
   const [matKhau, setMatKhau] = useState('')
   const [feedback,setFeedback] = useState<{kind:'success'|'error';title:string;message:string;path?:string}|null>(null)
   const [slow,setSlow]=useState(false)
-  useEffect(()=>{if(!loading)return;const t=window.setTimeout(()=>setSlow(true),8000);return()=>window.clearTimeout(t)},[loading])
   const [loading, setLoading] = useState(false)
+  useEffect(()=>{if(!loading)return;const t=window.setTimeout(()=>setSlow(true),8000);return()=>window.clearTimeout(t)},[loading])
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
