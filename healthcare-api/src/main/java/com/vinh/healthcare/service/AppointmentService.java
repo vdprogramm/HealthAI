@@ -86,8 +86,6 @@ public class AppointmentService {
                         )
                         .feeAmount(schedule.getDoctor().getGiaKham())
                         .paymentStatus(PaymentStatus.UNPAID)
-                        .feeAmount(schedule.getDoctor().getGiaKham())
-                        .paymentStatus(PaymentStatus.UNPAID)
                         .build();
 
         return appointmentRepository.save(appointment);
@@ -250,6 +248,8 @@ public class AppointmentService {
                         .trangThai(
                                 AppointmentStatus.CONFIRMED
                         )
+                        .feeAmount(schedule.getDoctor().getGiaKham())
+                        .paymentStatus(PaymentStatus.UNPAID)
                         .build();
 
         Appointment savedAppointment =
