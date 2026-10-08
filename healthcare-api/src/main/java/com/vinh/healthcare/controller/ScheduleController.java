@@ -19,6 +19,11 @@ public class ScheduleController {
         this.scheduleService = scheduleService;
     }
 
+    @PostMapping("/generate-demo")
+    public java.util.Map<String, Integer> generateDemo() {
+        return java.util.Map.of("created", scheduleService.createDemoSchedules());
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Schedule createSchedule(

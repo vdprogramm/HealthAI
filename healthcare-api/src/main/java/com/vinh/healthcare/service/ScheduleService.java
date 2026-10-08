@@ -8,6 +8,9 @@ import com.vinh.healthcare.repository.ScheduleRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.DayOfWeek;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -83,6 +86,30 @@ public class ScheduleService {
         }
 
         return scheduleRepository.findByDoctorId(doctorId);
+    }
+
+    public int createDemoSchedules() {
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        int created = 0;
+        for (Doctor doctor : doctorRepository.findAll()) {
+            for (int offset = 1; offset <= 7; offset++) {
+                LocalDate date = today.plusDays(offset);
+                if (date.getDayOfWeek() == DayOfWeek.SUNDAY) continue;
+                for (int hour : new int[]{8, 9, 14, 15}) {
+                    for (int minute : new int[]{0, 30}) {
+                        LocalTime start = LocalTime.of(hour, minute);
+                        if (scheduleRepository.existsByDoctorIdAndNgayKhamAndGioBatDau(
+                                doctor.getId(), date, start)) continue;
+                        scheduleRepository.save(Schedule.builder()
+                                .doctor(doctor).ngayKham(date)
+                                .gioBatDau(start).gioKetThuc(start.plusMinutes(30))
+                                .build());
+                        created++;
+                    }
+                }
+            }
+        }
+        return created;
     }
 
     public void deleteSchedule(Long id) {
