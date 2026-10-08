@@ -48,6 +48,8 @@ public class SecurityConfig {
                                         .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors/**", "/api/schedules/**").permitAll()
                                         .requestMatchers("/api/doctors/**", "/api/schedules/**").hasRole("ADMIN")
 
+                                        .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
+
                                         .requestMatchers("/api/admin/**")
                                         .hasRole("ADMIN")
 
