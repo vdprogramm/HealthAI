@@ -89,6 +89,8 @@ export default function AppointmentsPage() {
                 <p>
                   {appointment.chuyenKhoa}
                 </p>
+                <p><strong>Phí khám: {Number(appointment.phiKham ?? 0).toLocaleString("vi-VN")}đ</strong></p>
+                <p>Thanh toán: {appointment.trangThaiThanhToan === "PAID" ? "Đã thanh toán tại phòng khám" : "Thanh toán trực tiếp tại phòng khám (chưa thu)"}</p>
               </div>
 
               <div>

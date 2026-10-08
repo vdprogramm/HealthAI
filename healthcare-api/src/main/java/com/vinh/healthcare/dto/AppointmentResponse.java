@@ -2,6 +2,7 @@ package com.vinh.healthcare.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.math.BigDecimal;
 
 public record AppointmentResponse(
         Long appointmentId,
@@ -14,6 +15,8 @@ public record AppointmentResponse(
         Long scheduleId,
         LocalDate ngayKham,
         LocalTime gioBatDau,
-        LocalTime gioKetThuc
+        LocalTime gioKetThuc,
+        BigDecimal phiKham,
+        String trangThaiThanhToan
 ) {
 }

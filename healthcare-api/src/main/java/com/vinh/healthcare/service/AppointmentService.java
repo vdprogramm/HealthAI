@@ -7,6 +7,7 @@ import com.vinh.healthcare.entity.Appointment;
 import com.vinh.healthcare.entity.AppointmentStatus;
 import com.vinh.healthcare.entity.MedicalRecord;
 import com.vinh.healthcare.entity.Patient;
+import com.vinh.healthcare.entity.PaymentStatus;
 import com.vinh.healthcare.entity.Schedule;
 import com.vinh.healthcare.repository.AppointmentRepository;
 import com.vinh.healthcare.repository.MedicalRecordRepository;
@@ -64,9 +65,9 @@ public class AppointmentService {
 
         boolean alreadyBooked =
                 appointmentRepository
-                        .existsByScheduleIdAndTrangThai(
+                        .existsByScheduleIdAndTrangThaiNot(
                                 schedule.getId(),
-                                AppointmentStatus.CONFIRMED
+                                AppointmentStatus.CANCELED
                         );
 
         if (alreadyBooked) {
@@ -83,6 +84,8 @@ public class AppointmentService {
                         .trangThai(
                                 AppointmentStatus.CONFIRMED
                         )
+                        .feeAmount(schedule.getDoctor().getGiaKham())
+                        .paymentStatus(PaymentStatus.UNPAID)
                         .build();
 
         return appointmentRepository.save(appointment);
@@ -114,7 +117,9 @@ public class AppointmentService {
                         a.getSchedule().getId(),
                         a.getSchedule().getNgayKham(),
                         a.getSchedule().getGioBatDau(),
-                        a.getSchedule().getGioKetThuc()
+                        a.getSchedule().getGioKetThuc(),
+                        a.getFeeAmount() == null ? a.getDoctor().getGiaKham() : a.getFeeAmount(),
+                        (a.getPaymentStatus() == null ? PaymentStatus.UNPAID : a.getPaymentStatus()).name()
                 ))
                 .toList();
     }
@@ -169,6 +174,32 @@ public class AppointmentService {
     }
 
     @Transactional
+    public List<AppointmentResponse> getAllAppointmentsForAdmin() {
+        return appointmentRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public AppointmentResponse markPaid(Long id) {
+        Appointment a = appointmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn"));
+        if (a.getTrangThai() == AppointmentStatus.CANCELED) {
+            throw new IllegalStateException("Không thể thu tiền lịch đã hủy");
+        }
+        a.setPaymentStatus(PaymentStatus.PAID);
+        appointmentRepository.save(a);
+        return toResponse(a);
+    }
+
+    private AppointmentResponse toResponse(Appointment a) {
+        return new AppointmentResponse(a.getId(), a.getTrangThai().name(),
+                a.getDoctor().getId(), a.getDoctor().getTenBacSi(), a.getDoctor().getChuyenKhoa(),
+                a.getSchedule().getId(), a.getSchedule().getNgayKham(),
+                a.getSchedule().getGioBatDau(), a.getSchedule().getGioKetThuc(),
+                a.getFeeAmount() == null ? a.getDoctor().getGiaKham() : a.getFeeAmount(),
+                a.getPaymentStatus().name());
+    }
+
+    @Transactional
     public AiAppointmentResponse createAiAppointment(
             String patientEmail,
             AiAppointmentRequest request
@@ -203,9 +234,9 @@ public class AppointmentService {
 
         boolean alreadyBooked =
                 appointmentRepository
-                        .existsByScheduleIdAndTrangThai(
+                        .existsByScheduleIdAndTrangThaiNot(
                                 schedule.getId(),
-                                AppointmentStatus.CONFIRMED
+                                AppointmentStatus.CANCELED
                         );
 
         if (alreadyBooked) {
@@ -222,6 +253,8 @@ public class AppointmentService {
                         .trangThai(
                                 AppointmentStatus.CONFIRMED
                         )
+                        .feeAmount(schedule.getDoctor().getGiaKham())
+                        .paymentStatus(PaymentStatus.UNPAID)
                         .build();
 
         Appointment savedAppointment =

@@ -31,6 +31,8 @@ export interface TriageResponse {
 export interface Appointment {
   appointmentId: number
   trangThai: string
+  phiKham?: number
+  trangThaiThanhToan?: "UNPAID" | "PAID"
 
   doctorId: number
   tenBacSi: string

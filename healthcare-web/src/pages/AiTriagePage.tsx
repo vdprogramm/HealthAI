@@ -58,6 +58,8 @@ export default function AiTriagePage() {
     scheduleId: number,
   ) => {
     if (!result) return
+    const selectedDoctor = result.doctors.find(d => d.schedules.some(s => s.scheduleId === scheduleId))
+    if (!window.confirm(`Xác nhận đặt lịch với BS. ${selectedDoctor?.tenBacSi ?? ""}?\\nPhí khám: ${Number(selectedDoctor?.giaKham ?? 0).toLocaleString("vi-VN")}đ\\nThanh toán trực tiếp tại phòng khám.`)) return
 
     try {
       await api.post(
@@ -70,11 +72,8 @@ export default function AiTriagePage() {
         },
       )
 
-      setMessage(
-        'Đặt lịch khám thành công!',
-      )
-
-      await analyze()
+      setMessage('Đặt lịch thành công! Bạn sẽ thanh toán trực tiếp tại phòng khám.')
+      setResult(null)
     } catch (error: any) {
       setMessage(
         error.response?.data?.message ??
