@@ -1,0 +1,75 @@
+import { useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import api from '../api/api'
+import type { Appointment } from '../types'
+
+export default function AppointmentDetailPage() {
+  const { id } = useParams()
+
+  const [appointment, setAppointment] =
+    useState<Appointment | null>(null)
+
+  useEffect(() => {
+    api.get<Appointment[]>('/appointments/me')
+      .then(res => {
+        const found = res.data.find(
+          item => item.appointmentId === Number(id),
+        )
+
+        setAppointment(found ?? null)
+      })
+  }, [id])
+
+  if (!appointment) {
+    return <p>Không tìm thấy lịch khám.</p>
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <h1>Chi tiết lịch khám</h1>
+          <p>Appointment #{appointment.appointmentId}</p>
+        </div>
+      </div>
+
+      <div className="record-card">
+        <div>
+          <span>Trạng thái</span>
+          <p>{appointment.trangThai}</p>
+        </div>
+
+        <div>
+          <span>Bác sĩ</span>
+          <p>BS. {appointment.tenBacSi}</p>
+        </div>
+
+        <div>
+          <span>Chuyên khoa</span>
+          <p>{appointment.chuyenKhoa}</p>
+        </div>
+
+        <div>
+          <span>Ngày khám</span>
+          <p>{appointment.ngayKham}</p>
+        </div>
+
+        <div>
+          <span>Thời gian</span>
+          <p>
+            {appointment.gioBatDau}
+            {' - '}
+            {appointment.gioKetThuc}
+          </p>
+        </div>
+
+        <Link
+          className="primary-link"
+          to={`/medical-record/${appointment.appointmentId}`}
+        >
+          Xem hồ sơ khám bệnh
+        </Link>
+      </div>
+    </div>
+  )
+}
