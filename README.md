@@ -2,10 +2,23 @@
 
 > A full-stack healthcare appointment application combining a Java Spring Boot REST API, a Python FastAPI AI service, and a React web application.
 
-**Live web app:** https://health-ai-steel.vercel.app  
-**Backend API:** https://healthai-1-enr6.onrender.com/api  
-**AI service:** https://healthai-blz6.onrender.com  
-**Repository:** https://github.com/vdprogramm/HealthAI
+**Live Demo:** [https://health-ai-steel.vercel.app](https://health-ai-steel.vercel.app)
+
+## Demo Accounts
+
+Use the following **test-only accounts** to explore the role-based dashboards. Passwords are intentionally **not published in this public repository**. Configure separate, limited-access demo credentials and share them with reviewers privately.
+
+| Role | Login email | Password |
+| --- | --- | --- |
+| Admin | `admin@healthai.com` | Request demo password privately |
+| Doctor 1 — Nguyễn Văn Minh | `doctor1@healthai.com` | Request demo password privately |
+| Doctor 2 — Trần Thị Lan | `doctor2@healthai.com` | Request demo password privately |
+| Doctor 3 — Lê Quốc Huy | `doctor3@healthai.com` | Request demo password privately |
+| Doctor 4 — Phạm Thu Hà | `doctor4@healthai.com` | Request demo password privately |
+| Doctor 5 — Hoàng Đức Anh | `doctor5@healthai.com` | Request demo password privately |
+| Doctor 6 — Bùi Thị Phương | `doctor6@healthai.com` | Request demo password privately |
+
+> The initializer defines additional Doctor 7 and 8 accounts, but this public demo table intentionally lists Doctor 1–6 as requested. Login availability depends on the deployed database. Set a distinct temporary password for demo users; never publish real Admin or Doctor passwords.
 
 > **Project status:** Portfolio / MVP in development. Features below are based on the current repository; availability and successful operation depend on deployment, database content, and integration testing. This project is a demonstration, **not a medical device**. AI suggestions are not a diagnosis and must not replace professional medical evaluation.
 
