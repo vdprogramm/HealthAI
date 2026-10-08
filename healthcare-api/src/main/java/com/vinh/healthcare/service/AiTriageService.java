@@ -73,6 +73,9 @@ public class AiTriageService {
             connection =
                     (HttpURLConnection) url.openConnection();
 
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(30000);
+
             connection.setRequestMethod("POST");
 
             connection.setDoOutput(true);
@@ -215,9 +218,7 @@ public class AiTriageService {
         } catch (Exception e) {
 
             throw new RuntimeException(
-                    "Không thể gọi AI Service: "
-                            + e.getMessage(),
-                    e
+                "Dịch vụ AI đang tạm thời không khả dụng. Vui lòng thử lại sau."
             );
 
         } finally {

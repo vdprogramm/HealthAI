@@ -42,10 +42,12 @@ export default function AiTriagePage() {
         )
 
       setResult(response.data)
-    } catch (error: any) {
+    } catch (error: unknown) {
+      console.error('AI Triage request failed:', error)
+
       setMessage(
-        error.response?.data?.message ??
-        'Không thể kết nối AI',
+        'Dịch vụ AI đang tạm thời không khả dụng. ' +
+        'Vui lòng thử lại sau ít phút.'
       )
     } finally {
       setLoading(false)
