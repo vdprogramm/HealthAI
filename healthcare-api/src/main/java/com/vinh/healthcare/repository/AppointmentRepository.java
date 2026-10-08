@@ -9,6 +9,11 @@ import java.util.List;
 public interface AppointmentRepository
         extends JpaRepository<Appointment, Long> {
 
+    boolean existsByScheduleIdAndTrangThaiNot(
+            Long scheduleId,
+            AppointmentStatus trangThai
+    );
+
     boolean existsByScheduleIdAndTrangThai(
             Long scheduleId,
             AppointmentStatus trangThai
