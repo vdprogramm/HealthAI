@@ -119,7 +119,7 @@ public class AppointmentService {
                         a.getSchedule().getGioBatDau(),
                         a.getSchedule().getGioKetThuc(),
                         a.getFeeAmount() == null ? a.getDoctor().getGiaKham() : a.getFeeAmount(),
-                        a.getPaymentStatus().name()
+                        (a.getPaymentStatus() == null ? PaymentStatus.UNPAID : a.getPaymentStatus()).name()
                 ))
                 .toList();
     }
