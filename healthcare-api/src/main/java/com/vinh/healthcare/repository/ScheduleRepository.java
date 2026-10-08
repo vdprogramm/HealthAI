@@ -42,11 +42,12 @@ public interface ScheduleRepository
         SELECT s
         FROM Schedule s
         WHERE s.doctor.id = :doctorId
+          AND s.ngayKham >= CURRENT_DATE
           AND NOT EXISTS (
               SELECT a.id
               FROM Appointment a
               WHERE a.schedule.id = s.id
-                AND a.trangThai = com.vinh.healthcare.entity.AppointmentStatus.CONFIRMED
+                AND a.trangThai <> com.vinh.healthcare.entity.AppointmentStatus.CANCELED
           )
         ORDER BY s.ngayKham, s.gioBatDau
     """)
