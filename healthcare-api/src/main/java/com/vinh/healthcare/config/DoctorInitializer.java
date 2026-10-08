@@ -19,7 +19,7 @@ public class DoctorInitializer {
         CommandLineRunner seedDoctors(
                         DoctorRepository doctorRepository,
                         PasswordEncoder passwordEncoder,
-                        @Value("${DOCTOR_PASSWORD:123456}") String productionPassword,
+                        @Value("${DOCTOR_PASSWORD}") String productionPassword,
                         @Value("${spring.profiles.active:default}") String profile) {
                 return args -> {
                         boolean development = profile.equals("dev");
