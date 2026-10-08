@@ -17,6 +17,8 @@ type Appointment = {
 
 export default function AdminDashboardPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
+  const [patientCount, setPatientCount] = useState<number | null>(null)
+  const [patientError, setPatientError] = useState(false)
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [error, setError] = useState('')
   const [paymentMessage, setPaymentMessage] = useState('')
@@ -39,6 +41,9 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     doctorApi.getDoctors().then(setDoctors).catch(() => setError('Không tải được danh sách bác sĩ.'))
     void loadAppointments()
+    api.get<{ patientCount: number }>('/admin/dashboard')
+      .then(response => setPatientCount(response.data.patientCount))
+      .catch(() => setPatientError(true))
   }, [])
 
   const markPaid = async (appointment: Appointment) => {
@@ -92,7 +97,7 @@ export default function AdminDashboardPage() {
       <div className="portal-heading"><div><p>TRANG QUẢN TRỊ</p><h1>Dashboard Admin</h1><span>Quản lý hoạt động của HealthAI</span></div></div>
       <div className="portal-stats">
         <div><Stethoscope/><strong>{doctors.length}</strong><span>Bác sĩ đang hiển thị</span></div>
-        <div><Users/><strong>—</strong><span>Bệnh nhân (chờ API)</span></div>
+        <div><Users/><strong>{patientError ? "—" : patientCount ?? "…"}</strong><span>{patientError ? "Không tải được số bệnh nhân" : "Tổng bệnh nhân"}</span></div>
         <div><CalendarDays/><strong>{loadingAppointments ? '…' : appointments.length}</strong><span>Tổng lịch khám</span></div>
         <div><Wallet/><strong>{loadingAppointments ? '…' : totalPaid.toLocaleString('vi-VN') + 'đ'}</strong><span>Phí khám đã thu</span></div>
       </div>
@@ -151,7 +156,7 @@ export default function AdminDashboardPage() {
           <tbody>{doctors.map(d => <tr key={d.id}><td>{d.tenBacSi}</td><td>{d.chuyenKhoa}</td><td>{Number(d.giaKham).toLocaleString('vi-VN')} đ</td></tr>)}</tbody>
         </table></div>
       </section>
-      <p className="portal-note">Chức năng thống kê bệnh nhân và thêm/sửa/xóa bác sĩ sẽ được bổ sung sau.</p>
+      <p className="portal-note">Chức năng thêm/sửa/xóa bác sĩ sẽ được bổ sung sau.</p>
     </main>
   </div>
 }
