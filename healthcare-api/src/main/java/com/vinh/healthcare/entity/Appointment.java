@@ -39,7 +39,7 @@ public class Appointment {
     private LocalDateTime createdAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", nullable = false)
+    @Column(name = "payment_status")
     @Builder.Default
     private PaymentStatus paymentStatus = PaymentStatus.UNPAID;
 
