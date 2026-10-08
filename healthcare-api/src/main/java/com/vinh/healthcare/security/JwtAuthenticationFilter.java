@@ -1,31 +1,35 @@
 package com.vinh.healthcare.security;
 
-import com.vinh.healthcare.entity.Patient;
+import com.vinh.healthcare.repository.AdminRepository;
 import com.vinh.healthcare.repository.PatientRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Collections;
+import java.util.List;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final PatientRepository patientRepository;
+    private final AdminRepository adminRepository;
 
     public JwtAuthenticationFilter(
             JwtService jwtService,
-            PatientRepository patientRepository
+            PatientRepository patientRepository,
+            AdminRepository adminRepository
     ) {
         this.jwtService = jwtService;
         this.patientRepository = patientRepository;
+        this.adminRepository = adminRepository;
     }
 
     @Override
@@ -35,46 +39,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        if (authHeader == null ||
-                !authHeader.startsWith("Bearer ")) {
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
 
-            filterChain.doFilter(request, response);
-            return;
-        }
+            try {
+                if (jwtService.isTokenValid(token)) {
+                    String email = jwtService.extractEmail(token);
+                    String role = jwtService.extractRole(token);
 
-        String token = authHeader.substring(7);
+                    // Tương thích token bệnh nhân đã cấp trước đây
+                    if (role == null) {
+                        role = "PATIENT";
+                    }
 
-        try {
+                    boolean exists = switch (role) {
+                        case "ADMIN" ->
+                                adminRepository.findByEmail(email).isPresent();
+                        case "PATIENT" ->
+                                patientRepository.findByEmail(email).isPresent();
+                        default -> false;
+                    };
 
-            if (jwtService.isTokenValid(token)) {
+                    if (exists && SecurityContextHolder.getContext()
+                            .getAuthentication() == null) {
 
-                String email = jwtService.extractEmail(token);
+                        var authentication =
+                                new UsernamePasswordAuthenticationToken(
+                                        email,
+                                        null,
+                                        List.of(new SimpleGrantedAuthority(
+                                                "ROLE_" + role))
+                                );
 
-                Patient patient =
-                        patientRepository.findByEmail(email)
-                                .orElse(null);
-
-                if (patient != null &&
-                        SecurityContextHolder
-                                .getContext()
-                                .getAuthentication() == null) {
-
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(
-                                    patient.getEmail(),
-                                    null,
-                                    Collections.emptyList()
-                            );
-
-                    SecurityContextHolder
-                            .getContext()
-                            .setAuthentication(authentication);
+                        SecurityContextHolder.getContext()
+                                .setAuthentication(authentication);
+                    }
                 }
+            } catch (Exception ignored) {
+                SecurityContextHolder.clearContext();
             }
-
-        } catch (Exception ignored) {
         }
 
         filterChain.doFilter(request, response);

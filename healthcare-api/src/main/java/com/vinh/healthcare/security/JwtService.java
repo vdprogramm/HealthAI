@@ -20,43 +20,49 @@ public class JwtService {
     private long jwtExpiration;
 
     private SecretKey getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        return Keys.hmacShaKeyFor(
+                Decoders.BASE64.decode(jwtSecret)
+        );
     }
 
-    public String generateToken(String email) {
-
+    public String generateToken(String email, String role) {
         Date now = new Date();
-        Date expiration =
-                new Date(now.getTime() + jwtExpiration);
 
         return Jwts.builder()
                 .subject(email)
+                .claim("role", role)
                 .issuedAt(now)
-                .expiration(expiration)
+                .expiration(new Date(now.getTime() + jwtExpiration))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    // Giữ tương thích với code cũ nếu còn sử dụng
+    public String generateToken(String email) {
+        return generateToken(email, "PATIENT");
     }
 
     public String extractEmail(String token) {
         return extractAllClaims(token).getSubject();
     }
 
+    public String extractRole(String token) {
+        return extractAllClaims(token).get(
+                "role", String.class
+        );
+    }
+
     public boolean isTokenValid(String token) {
-
         try {
-            Claims claims = extractAllClaims(token);
-
-            return claims.getExpiration()
+            return extractAllClaims(token)
+                    .getExpiration()
                     .after(new Date());
-
         } catch (Exception e) {
             return false;
         }
     }
 
     private Claims extractAllClaims(String token) {
-
         return Jwts.parser()
                 .verifyWith(getSigningKey())
                 .build()

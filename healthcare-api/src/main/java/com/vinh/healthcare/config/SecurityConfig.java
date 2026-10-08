@@ -42,22 +42,24 @@ public class SecurityConfig {
                                                 SessionCreationPolicy.STATELESS))
 
                                 .authorizeHttpRequests(auth -> auth
-                                                .requestMatchers(
-                                                                "/api/auth/**")
-                                                .permitAll()
 
-                                                .requestMatchers(
-                                                                "/api/doctors/**",
-                                                                "/api/schedules/**")
-                                                .permitAll()
+                                        .requestMatchers("/api/auth/**").permitAll()
 
-                                                .requestMatchers(
-                                                                "/api/appointments/**",
-                                                                "/api/ai/**",
-                                                                "/api/medical-records/**")
-                                                .authenticated()
+                                        .requestMatchers(
+                                                "/api/doctors/**",
+                                                "/api/schedules/**"
+                                        ).permitAll()
 
-                                                .anyRequest().authenticated())
+                                        .requestMatchers("/api/admin/**")
+                                        .hasRole("ADMIN")
+
+                                        .requestMatchers(
+                                                "/api/appointments/**",
+                                                "/api/ai/**",
+                                                "/api/medical-records/**"
+                                        ).authenticated()
+
+                                        .anyRequest().authenticated())
 
                                 .addFilterBefore(
                                                 jwtAuthenticationFilter,

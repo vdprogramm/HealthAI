@@ -1,87 +1,100 @@
 package com.vinh.healthcare.service;
 
-import com.vinh.healthcare.dto.AuthResponse;
-import com.vinh.healthcare.dto.LoginRequest;
-import com.vinh.healthcare.dto.RegisterRequest;
+import com.vinh.healthcare.dto.*;
+import com.vinh.healthcare.entity.Admin;
 import com.vinh.healthcare.entity.Patient;
+import com.vinh.healthcare.repository.AdminRepository;
 import com.vinh.healthcare.repository.PatientRepository;
 import com.vinh.healthcare.security.JwtService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
 
 @Service
 public class AuthService {
 
     private final PatientRepository patientRepository;
+    private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     public AuthService(
             PatientRepository patientRepository,
+            AdminRepository adminRepository,
             PasswordEncoder passwordEncoder,
             JwtService jwtService
     ) {
         this.patientRepository = patientRepository;
+        this.adminRepository = adminRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
     }
 
     public AuthResponse register(RegisterRequest request) {
 
-        if (patientRepository.existsByEmail(request.email())) {
-            throw new RuntimeException("Email đã được sử dụng");
+        if (patientRepository.existsByEmail(request.email())
+                || adminRepository.findByEmail(request.email()).isPresent()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT, "Email đã được sử dụng");
         }
 
         Patient patient = Patient.builder()
                 .hoTen(request.hoTen())
                 .email(request.email())
-                .matKhau(
-                        passwordEncoder.encode(request.matKhau())
-                )
+                .matKhau(passwordEncoder.encode(request.matKhau()))
                 .soDienThoai(request.soDienThoai())
                 .build();
 
-        Patient savedPatient =
-                patientRepository.save(patient);
-
-        String token =
-                jwtService.generateToken(savedPatient.getEmail());
+        Patient saved = patientRepository.save(patient);
 
         return new AuthResponse(
-                token,
-                savedPatient.getId(),
-                savedPatient.getHoTen(),
-                savedPatient.getEmail()
+                jwtService.generateToken(saved.getEmail(), "PATIENT"),
+                saved.getId(),
+                saved.getHoTen(),
+                saved.getEmail()
         );
     }
 
     public AuthResponse login(LoginRequest request) {
 
-        Patient patient =
-                patientRepository
-                        .findByEmail(request.email())
-                        .orElseThrow(() ->
-                                new RuntimeException(
-                                        "Email hoặc mật khẩu không đúng"
-                                ));
+        Admin admin = adminRepository.findByEmail(request.email())
+                .orElse(null);
 
-        if (!passwordEncoder.matches(
-                request.matKhau(),
-                patient.getMatKhau())) {
+        if (admin != null) {
+            if (!passwordEncoder.matches(
+                    request.matKhau(), admin.getMatKhau())) {
+                throw invalidCredentials();
+            }
 
-            throw new RuntimeException(
-                    "Email hoặc mật khẩu không đúng"
+            return new AuthResponse(
+                    jwtService.generateToken(admin.getEmail(), "ADMIN"),
+                    admin.getId(),
+                    admin.getHoTen(),
+                    admin.getEmail()
             );
         }
 
-        String token =
-                jwtService.generateToken(patient.getEmail());
+        Patient patient = patientRepository.findByEmail(request.email())
+                .orElseThrow(this::invalidCredentials);
+
+        if (!passwordEncoder.matches(
+                request.matKhau(), patient.getMatKhau())) {
+            throw invalidCredentials();
+        }
 
         return new AuthResponse(
-                token,
+                jwtService.generateToken(patient.getEmail(), "PATIENT"),
                 patient.getId(),
                 patient.getHoTen(),
                 patient.getEmail()
+        );
+    }
+
+    private ResponseStatusException invalidCredentials() {
+        return new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED,
+                "Email hoặc mật khẩu không đúng"
         );
     }
 }
