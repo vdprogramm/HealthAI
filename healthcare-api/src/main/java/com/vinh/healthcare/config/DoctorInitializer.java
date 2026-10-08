@@ -50,6 +50,18 @@ public class DoctorInitializer {
                         createDoctor(doctorRepository, passwordEncoder,
                                         "doctor5@healthai.com", "Hoàng Đức Anh",
                                         "Nhi khoa", "220000", password);
+
+                        createDoctor(doctorRepository, passwordEncoder,
+                                        "doctor6@healthai.com", "Bùi Thị Phương",
+                                        "Mắt", "200000", password);
+
+                        createDoctor(doctorRepository, passwordEncoder,
+                                        "doctor7@healthai.com", "Vũ Trọng Đại",
+                                        "Xương khớp", "300000", password);
+
+                        createDoctor(doctorRepository, passwordEncoder,
+                                        "doctor8@healthai.com", "Đặng Thùy Chi",
+                                        "Tai mũi họng", "250000", password);
                 };
         }
 
