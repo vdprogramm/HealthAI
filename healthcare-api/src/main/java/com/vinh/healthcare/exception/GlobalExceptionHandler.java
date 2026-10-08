@@ -25,6 +25,16 @@ public class GlobalExceptionHandler {
                 ));
     }
 
+    @ExceptionHandler(AiServiceUnavailableException.class)
+    public ResponseEntity<Map<String, Object>> handleAiUnavailable(AiServiceUnavailableException ex) {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
+                "status", 503,
+                "error", "AI_SERVICE_UNAVAILABLE",
+                "message", ex.getMessage(),
+                "timestamp", LocalDateTime.now().toString()
+        ));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<Map<String, Object>>
     handleRuntimeException(RuntimeException ex) {
