@@ -66,6 +66,20 @@ export default function AdminDashboardPage() {
   const totalPaid = appointments.filter(a => a.trangThaiThanhToan === 'PAID')
     .reduce((sum, a) => sum + Number(a.phiKham ?? 0), 0)
 
+  const revenueByDay = Array.from(
+    appointments.filter(a => a.trangThaiThanhToan === 'PAID').reduce((map, a) => {
+      map.set(a.ngayKham, (map.get(a.ngayKham) ?? 0) + Number(a.phiKham ?? 0))
+      return map
+    }, new Map<string, number>())
+  ).sort(([a], [b]) => a.localeCompare(b)).slice(-7)
+  const maxRevenue = Math.max(1, ...revenueByDay.map(([, amount]) => amount))
+  const statuses = [
+    { label: 'Đã xác nhận', count: appointments.filter(a => a.trangThai === 'CONFIRMED').length, tone: 'confirmed' },
+    { label: 'Đang chờ', count: appointments.filter(a => a.trangThai === 'PENDING').length, tone: 'pending' },
+    { label: 'Đã hủy', count: appointments.filter(a => a.trangThai === 'CANCELED').length, tone: 'canceled' },
+  ]
+  const totalStatus = Math.max(1, appointments.length)
+
   return <div className="portal-shell">
     <aside className="portal-sidebar">
       <h2>HealthAI Admin</h2>
@@ -81,6 +95,33 @@ export default function AdminDashboardPage() {
         <div><Users/><strong>—</strong><span>Bệnh nhân (chờ API)</span></div>
         <div><CalendarDays/><strong>{loadingAppointments ? '…' : appointments.length}</strong><span>Tổng lịch khám</span></div>
         <div><Wallet/><strong>{loadingAppointments ? '…' : totalPaid.toLocaleString('vi-VN') + 'đ'}</strong><span>Phí khám đã thu</span></div>
+      </div>
+      <div className="portal-charts" id="admin-charts">
+        <section className="portal-panel">
+          <h2>Biểu đồ doanh thu đã thu</h2>
+          <p>Phí khám đã thanh toán, nhóm theo ngày khám (tối đa 7 ngày có giao dịch).</p>
+          {loadingAppointments ? <p>Đang tải biểu đồ...</p> : revenueByDay.length === 0 ?
+            <p>Chưa có lịch khám nào được xác nhận đã thu tiền.</p> :
+            <div className="portal-revenue-chart" role="img" aria-label="Biểu đồ doanh thu đã thu theo ngày khám">
+              {revenueByDay.map(([date, amount]) => <div className="portal-revenue-column" key={date}>
+                <span className="portal-chart-value">{amount.toLocaleString('vi-VN')}đ</span>
+                <div className="portal-revenue-track"><div className="portal-revenue-bar" style={{ height: `${Math.max(4, amount / maxRevenue * 100)}%` }}/></div>
+                <span className="portal-chart-date">{date.slice(5)}</span>
+              </div>)}
+            </div>}
+        </section>
+        <section className="portal-panel">
+          <h2>Biểu đồ trạng thái lịch khám</h2>
+          <p>Phân bổ lịch hẹn theo trạng thái hiện tại.</p>
+          {loadingAppointments ? <p>Đang tải biểu đồ...</p> : appointments.length === 0 ?
+            <p>Chưa có dữ liệu lịch khám.</p> :
+            <div className="portal-status-chart">
+              {statuses.map(item => <div key={item.tone} className="portal-status-row">
+                <div className="portal-status-label"><span>{item.label}</span><strong>{item.count} lịch</strong></div>
+                <div className="portal-status-track"><div className={`portal-status-fill portal-status-${item.tone}`} style={{ width: `${item.count / totalStatus * 100}%` }}/></div>
+              </div>)}
+            </div>}
+        </section>
       </div>
       <section className="portal-panel" id="appointment-payments">
         <h2>Quản lý lịch khám và thu phí trực tiếp</h2>
