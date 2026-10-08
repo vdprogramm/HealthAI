@@ -174,6 +174,11 @@ public class AppointmentService {
     }
 
     @Transactional
+    public List<AppointmentResponse> getAllAppointmentsForAdmin() {
+        return appointmentRepository.findAll().stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
     public AppointmentResponse markPaid(Long id) {
         Appointment a = appointmentRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn"));
