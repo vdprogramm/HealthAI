@@ -12,6 +12,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import com.vinh.healthcare.exception.AiServiceUnavailableException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -42,9 +45,6 @@ public class AiTriageService {
         HttpURLConnection connection = null;
 
         try {
-            System.out.println(
-                    "JAVA NHAN: " + request.trieuChung()
-            );
 
             String symptom = request.trieuChung()
                     .replace("\\", "\\\\")
@@ -58,13 +58,7 @@ public class AiTriageService {
             byte[] bodyBytes =
                     jsonBody.getBytes(StandardCharsets.UTF_8);
 
-            System.out.println(
-                    "JAVA GUI FASTAPI: " + jsonBody
-            );
 
-            System.out.println(
-                    "BODY LENGTH: " + bodyBytes.length
-            );
 
             var url = URI.create(
                     aiServiceUrl + "/api/triage"
@@ -73,8 +67,9 @@ public class AiTriageService {
             connection =
                     (HttpURLConnection) url.openConnection();
 
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(30000);
+            // Render Free instances may require a cold start. Bound the request to avoid hanging.
+            connection.setConnectTimeout(15000);
+            connection.setReadTimeout(75000);
 
             connection.setRequestMethod("POST");
 
@@ -133,17 +128,10 @@ public class AiTriageService {
                     "FASTAPI STATUS: " + status
             );
 
-            System.out.println(
-                    "FASTAPI RESPONSE: " + responseBody
-            );
 
             if (status < 200 || status >= 300) {
-                throw new RuntimeException(
-                        "FastAPI lỗi "
-                                + status
-                                + ": "
-                                + responseBody
-                );
+                System.err.println("AI upstream HTTP status: " + status);
+                throw new AiServiceUnavailableException("Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại sau.");
             }
 
             String chuyenKhoa =
@@ -215,12 +203,17 @@ public class AiTriageService {
                     doctorResponses
             );
 
+        } catch (AiServiceUnavailableException e) {
+            throw e;
+        } catch (SocketTimeoutException e) {
+            System.err.println("AI upstream timeout: " + e.getClass().getSimpleName());
+            throw new AiServiceUnavailableException("Dịch vụ AI đang khởi động hoặc phản hồi chậm. Vui lòng thử lại.", e);
+        } catch (IOException e) {
+            System.err.println("AI upstream connection error: " + e.getClass().getSimpleName());
+            throw new AiServiceUnavailableException("Không thể kết nối dịch vụ AI. Vui lòng thử lại.", e);
         } catch (Exception e) {
-
-            throw new RuntimeException(
-                "Dịch vụ AI đang tạm thời không khả dụng. Vui lòng thử lại sau."
-            );
-
+            System.err.println("AI triage internal error: " + e.getClass().getSimpleName());
+            throw new AiServiceUnavailableException("Không thể xử lý yêu cầu AI lúc này.", e);
         } finally {
 
             if (connection != null) {
