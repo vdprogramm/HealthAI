@@ -19,84 +19,75 @@ import java.util.List;
 @Configuration
 public class SecurityConfig {
 
-    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+        private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
-        this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-    }
+        public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
+                this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)
-            throws Exception {
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity http)
+                        throws Exception {
 
-        http
-            .cors(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
+                http
+                                .cors(Customizer.withDefaults())
+                                .csrf(csrf -> csrf.disable())
 
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
-            )
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                    "/api/auth/**"
-                ).permitAll()
+                                .authorizeHttpRequests(auth -> auth
+                                                .requestMatchers(
+                                                                "/api/auth/**")
+                                                .permitAll()
 
-                .requestMatchers(
-                    "/api/doctors/**",
-                    "/api/schedules/**"
-                ).permitAll()
+                                                .requestMatchers(
+                                                                "/api/doctors/**",
+                                                                "/api/schedules/**")
+                                                .permitAll()
 
-                .requestMatchers(
-                    "/api/appointments/**",
-                    "/api/ai/**",
-                    "/api/medical-records/**"
-                ).authenticated()
+                                                .requestMatchers(
+                                                                "/api/appointments/**",
+                                                                "/api/ai/**",
+                                                                "/api/medical-records/**")
+                                                .authenticated()
 
-                .anyRequest().authenticated()
-            )
+                                                .anyRequest().authenticated())
 
-            .addFilterBefore(
-                jwtAuthenticationFilter,
-                UsernamePasswordAuthenticationFilter.class
-            );
+                                .addFilterBefore(
+                                                jwtAuthenticationFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
 
-        return http.build();
-    }
+                return http.build();
+        }
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
 
-        CorsConfiguration config = new CorsConfiguration();
+                CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOriginPatterns(List.of(
-            "https://healthai-jlipcq446-tech-d941.vercel.app",
-            "http://localhost:5173",
-            "http://127.0.0.1:5173"
-        ));
+                config.setAllowedOriginPatterns(List.of(
+                                "https://*.vercel.app",
+                                "http://localhost:5173",
+                                "http://127.0.0.1:5173"));
 
-        config.setAllowedMethods(List.of(
-            "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"
-        ));
+                config.setAllowedMethods(List.of(
+                                "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 
-        config.setAllowedHeaders(List.of(
-            "Authorization", "Content-Type", "Accept"
-        ));
+                config.setAllowedHeaders(List.of(
+                                "Authorization", "Content-Type", "Accept"));
 
-        config.setAllowCredentials(true);
+                config.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source =
-            new UrlBasedCorsConfigurationSource();
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 
-        source.registerCorsConfiguration("/**", config);
+                source.registerCorsConfiguration("/**", config);
 
-        return source;
-    }
+                return source;
+        }
 }
