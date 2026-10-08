@@ -45,10 +45,8 @@ public class SecurityConfig {
 
                                         .requestMatchers("/api/auth/**").permitAll()
 
-                                        .requestMatchers(
-                                                "/api/doctors/**",
-                                                "/api/schedules/**"
-                                        ).permitAll()
+                                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/doctors/**", "/api/schedules/**").permitAll()
+                                        .requestMatchers("/api/doctors/**", "/api/schedules/**").hasRole("ADMIN")
 
                                         .requestMatchers("/api/admin/**")
                                         .hasRole("ADMIN")
