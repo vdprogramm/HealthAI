@@ -17,8 +17,8 @@ export default function RegisterPage() {
 
   const [feedback,setFeedback] = useState<{kind:'success'|'error';title:string;message:string}|null>(null)
   const [slow,setSlow]=useState(false)
-  useEffect(()=>{if(!loading)return;const t=window.setTimeout(()=>setSlow(true),8000);return()=>window.clearTimeout(t)},[loading])
   const [loading, setLoading] = useState(false)
+  useEffect(()=>{if(!loading)return;const t=window.setTimeout(()=>setSlow(true),8000);return()=>window.clearTimeout(t)},[loading])
 
   const handleSubmit = async (
     e: FormEvent<HTMLFormElement>,
