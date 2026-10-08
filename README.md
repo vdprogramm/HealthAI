@@ -10,13 +10,13 @@ Use the following **test-only accounts** to explore the role-based dashboards. P
 
 | Role | Login email | Password |
 | --- | --- | --- |
-| Admin | `admin@healthai.com` | Request demo password privately |
-| Doctor 1 — Nguyễn Văn Minh | `doctor1@healthai.com` | Request demo password privately |
-| Doctor 2 — Trần Thị Lan | `doctor2@healthai.com` | Request demo password privately |
-| Doctor 3 — Lê Quốc Huy | `doctor3@healthai.com` | Request demo password privately |
-| Doctor 4 — Phạm Thu Hà | `doctor4@healthai.com` | Request demo password privately |
-| Doctor 5 — Hoàng Đức Anh | `doctor5@healthai.com` | Request demo password privately |
-| Doctor 6 — Bùi Thị Phương | `doctor6@healthai.com` | Request demo password privately |
+| Admin | `admin@healthai.com` | 123456 |
+| Doctor 1 — Nguyễn Văn Minh | `doctor1@healthai.com` | 123456 |
+| Doctor 2 — Trần Thị Lan | `doctor2@healthai.com` | 123456 |
+| Doctor 3 — Lê Quốc Huy | `doctor3@healthai.com` | 123456|
+| Doctor 4 — Phạm Thu Hà | `doctor4@healthai.com` | 123456 |
+| Doctor 5 — Hoàng Đức Anh | `doctor5@healthai.com` | 123456 |
+| Doctor 6 — Bùi Thị Phương | `doctor6@healthai.com` | 123456 |
 
 > The initializer defines additional Doctor 7 and 8 accounts, but this public demo table intentionally lists Doctor 1–6 as requested. Login availability depends on the deployed database. Set a distinct temporary password for demo users; never publish real Admin or Doctor passwords.
 
