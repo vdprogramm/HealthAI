@@ -7,7 +7,7 @@ import {
   useParams,
 } from 'react-router-dom'
 
-import api from '../api/api'
+import { medicalRecordApi } from '../api/medicalRecord.api'
 import type { MedicalRecord } from '../types'
 
 export default function MedicalRecordPage() {
@@ -23,12 +23,9 @@ export default function MedicalRecordPage() {
   useEffect(() => {
     const load = async () => {
       try {
-        const response =
-          await api.get<MedicalRecord>(
-            `/medical-records/appointment/${appointmentId}`,
-          )
-
-        setRecord(response.data)
+        if (!appointmentId) return;
+        const data = await medicalRecordApi.getByAppointmentId(appointmentId);
+        setRecord(data);
       } catch {
         setError(
           'Không tìm thấy bệnh án.',

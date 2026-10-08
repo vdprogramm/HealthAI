@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
-import api from '../api/api'
+import { appointmentApi } from '../api/appointment.api'
 import type { Appointment } from '../types'
 
 export default function AppointmentsPage() {
@@ -21,12 +21,8 @@ export default function AppointmentsPage() {
 
   const load = async () => {
     try {
-      const response =
-        await api.get<Appointment[]>(
-          '/appointments/me',
-        )
-
-      setAppointments(response.data)
+      const data = await appointmentApi.getMyAll()
+      setAppointments(data)
     } finally {
       setLoading(false)
     }
@@ -46,9 +42,7 @@ export default function AppointmentsPage() {
 
     if (!confirmed) return
 
-    await api.patch(
-      `/appointments/${appointmentId}/cancel`,
-    )
+    await appointmentApi.cancel(appointmentId)
 
     await load()
   }

@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import api from '../api/api'
-import type { AuthResponse } from '../types'
+import { authApi } from '../api/auth.api'
 
 export default function LoginPage() {
   const navigate = useNavigate()
@@ -21,22 +20,19 @@ export default function LoginPage() {
       setLoading(true)
       setError('')
 
-      const response = await api.post<AuthResponse>(
-        '/auth/login',
-        {
-          email,
-          matKhau,
-        },
-      )
+      const data = await authApi.login({
+        email,
+        matKhau,
+      })
 
       localStorage.setItem(
         'token',
-        response.data.token,
+        data.token,
       )
 
       localStorage.setItem(
         'user',
-        JSON.stringify(response.data),
+        JSON.stringify(data),
       )
 
       navigate('/')

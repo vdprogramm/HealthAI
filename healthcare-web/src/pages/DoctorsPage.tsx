@@ -1,20 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Stethoscope } from 'lucide-react'
-import api from '../api/api'
-
-interface Doctor {
-  id: number
-  tenBacSi: string
-  chuyenKhoa: string
-  giaKham: number
-}
+import { doctorApi, type Doctor } from '../api/doctor.api'
 
 export default function DoctorsPage() {
   const [doctors, setDoctors] = useState<Doctor[]>([])
 
   useEffect(() => {
-    api.get<Doctor[]>('/doctors')
-      .then(res => setDoctors(res.data))
+    doctorApi.getDoctors()
+      .then(data => setDoctors(data))
   }, [])
 
   return (

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import api from '../api/api'
+import { appointmentApi } from '../api/appointment.api'
 import type { Appointment } from '../types'
 
 export default function AppointmentDetailPage() {
@@ -10,9 +10,9 @@ export default function AppointmentDetailPage() {
     useState<Appointment | null>(null)
 
   useEffect(() => {
-    api.get<Appointment[]>('/appointments/me')
-      .then(res => {
-        const found = res.data.find(
+    appointmentApi.getMyAll()
+      .then(data => {
+        const found = data.find(
           item => item.appointmentId === Number(id),
         )
 

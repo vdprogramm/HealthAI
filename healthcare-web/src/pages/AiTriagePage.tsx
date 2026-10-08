@@ -45,7 +45,7 @@ export default function AiTriagePage() {
     } catch (error: any) {
       setMessage(
         error.response?.data?.message ??
-          'Không thể kết nối AI',
+        'Không thể kết nối AI',
       )
     } finally {
       setLoading(false)
@@ -72,13 +72,11 @@ export default function AiTriagePage() {
         'Đặt lịch khám thành công!',
       )
 
-      // Chạy AI lại để schedule vừa đặt
-      // biến khỏi danh sách lịch trống.
       await analyze()
     } catch (error: any) {
       setMessage(
         error.response?.data?.message ??
-          'Đặt lịch thất bại',
+        'Đặt lịch thất bại',
       )
     }
   }
@@ -233,10 +231,10 @@ export default function AiTriagePage() {
 
                     {doctor.schedules.length ===
                       0 && (
-                      <span className="muted">
-                        Chưa có lịch trống
-                      </span>
-                    )}
+                        <span className="muted">
+                          Chưa có lịch trống
+                        </span>
+                      )}
                   </div>
                 </div>
               ),
